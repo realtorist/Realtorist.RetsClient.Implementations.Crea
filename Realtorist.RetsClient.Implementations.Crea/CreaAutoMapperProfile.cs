@@ -3,7 +3,6 @@ using Realtorist.Models.Enums.LookupTypes;
 using Realtorist.Models.Helpers;
 using Realtorist.Models.Listings;
 using Realtorist.Models.Listings.Details;
-using Realtorist.Models.Listings.Enums;
 using Realtorist.Models.Xml;
 using System;
 using System.Linq;
@@ -50,7 +49,7 @@ namespace Realtorist.RetsClient.Implementations.Crea
                 .ForMember(dest => dest.Views, dest => dest.Ignore())
                 .ForMember(dest => dest.Featured, dest => dest.Ignore())
                 .ForMember(dest => dest.Disabled, dest => dest.Ignore())
-                .ForMember(dest => dest.Source, dest => dest.MapFrom(source => ListingSource.Crea))
+                .ForMember(dest => dest.FeedId, dest => dest.Ignore())
                 .ForMember(dest => dest.ExternalId, dest => dest.MapFrom(source => source.ID))
                 .ForMember(dest => dest.Building, dest => dest.MapFrom(source => source.Building))
                 .ForMember(dest => dest.MlsNumber, dest => dest.MapFrom(source => source.ListingID))

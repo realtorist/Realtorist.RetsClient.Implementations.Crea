@@ -8,7 +8,6 @@ using Realtorist.Models.Events;
 using Realtorist.Models.Helpers;
 using Realtorist.Models.Listings;
 using Realtorist.Models.Listings.Details;
-using Realtorist.Models.Listings.Enums;
 using Realtorist.Models.Pagination;
 using Realtorist.Models.Settings;
 using Realtorist.RetsClient.Abstractions;
@@ -34,7 +33,7 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
 
         private readonly ISettingsProvider _settingsProvider;
         private readonly IDdfClientFactory _ddfClientFactory;
-        private readonly RetsConfiguration _ddfConfiguration;
+        private readonly ListingsFeed _ddfConfiguration;
         private readonly IListingsDataAccess _listingsDataAccess;
         private readonly IBatchGeoCoder _geoCoder;
         private readonly IMapper _mapper;
@@ -54,7 +53,7 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
         /// <param name="eventLogger">Event logger</param>
         /// <param name="logger">Logger</param>
         public CreaUpdateFlow(
-            IOptions<RetsConfiguration> configuration,
+            IOptions<ListingsFeed> configuration,
             IListingsDataAccess listingsDataAccess,
             IBatchGeoCoder geoCoder,
             IMapper mapper,
@@ -107,18 +106,18 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
                 throw;
             }
 
-            var existingListingsIds = (await _listingsDataAccess.GetIdsAsync(ListingSource.Crea)).ToHashSet();
+            var existingListingsIds = (await _listingsDataAccess.GetIdsAsync(_ddfConfiguration.Id)).ToHashSet();
 
             var idsInDdf = masterList.Select(listing => listing.ID).ToHashSet();
 
             var toRemove = existingListingsIds.Where(id => !idsInDdf.Contains(id)).ToArray();
 
             _logger.LogInformation($"Found {toRemove.Length} listings to remove");
-            await _listingsDataAccess.RemoveListingsAsync(ListingSource.Crea, toRemove);
+            await _listingsDataAccess.RemoveListingsAsync(_ddfConfiguration.Id, toRemove);
 
             _logger.LogInformation($"Removed {toRemove.Length} listings");
 
-            var utcLatestDate = (await _listingsDataAccess.GetLatestUpdateDateTimeAsync(ListingSource.Crea)) ?? DateTime.UtcNow.AddYears(-10);
+            var utcLatestDate = (await _listingsDataAccess.GetLatestUpdateDateTimeAsync(_ddfConfiguration.Id)) ?? DateTime.UtcNow.AddYears(-10);
 
             // CREA has a strange behavior with latest update time as an argument: expects it as UTC but treats as a local time
             //var latestDate = settings.GetDateTimeInTimeZoneFromUtc(utcLatestDate);
@@ -165,7 +164,7 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
                         listing.Address.Coordinates = null;
                     }
 
-                    listing.Source = ListingSource.Crea;
+                    listing.FeedId = _ddfConfiguration.Id;
 
                     if (!listingsSettings.ListingOfficesToAutoFavouriteListings.IsNullOrEmpty() 
                         && listingsSettings.ListingOfficesToAutoFavouriteListings.Contains(listing.ListingOfficeName))
@@ -173,7 +172,7 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
                         listing.Featured = true;
                     }
 
-                    var wasUpdated = await _listingsDataAccess.UpdateOrAddListingAsync(listing.ExternalId, ListingSource.Crea, listing, true, true);
+                    var wasUpdated = await _listingsDataAccess.UpdateOrAddListingAsync(listing.ExternalId, _ddfConfiguration.Id, listing, true, true);
                     if (!wasUpdated)
                     {
                         recordsAdded++;

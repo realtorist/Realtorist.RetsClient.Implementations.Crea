@@ -18,6 +18,7 @@ using Realtorist.RetsClient.Implementations.Crea.RetsModels;
 using Realtorist.Models.Settings;
 using Realtorist.RetsClient.Implementations.Crea.Models.Exceptions;
 using Realtorist.RetsClient.Implementations.Crea.Models.Enums;
+using Realtorist.Services.Abstractions.Providers;
 
 namespace Realtorist.RetsClient.Implementations.Crea.Implementations
 {
@@ -28,7 +29,8 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
     {
         private const string Format = "STANDARD-XML-ENCODED";
 
-        private readonly RetsConfiguration _configuration;
+        private readonly ListingsFeed _configuration;
+        private readonly IEncryptionProvider _encryptionProvider;
         private readonly ILogger _logger;
 
         private HttpClient _httpClient;
@@ -45,10 +47,12 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
         /// </summary>
         /// <param name="configuration">Configuration options</param>
         /// <param name="httpClient">HTTP Client</param>
+        /// <param name="encryptionProvider">Encryption provider</param>
         /// <param name="logger">Logger</param>
-        public DdfClient(IOptions<RetsConfiguration> configuration, HttpClient httpClient, ILogger<DdfClient> logger)
+        public DdfClient(IOptions<ListingsFeed> configuration, HttpClient httpClient, IEncryptionProvider encryptionProvider, ILogger<DdfClient> logger)
         {
             _configuration = configuration?.Value ?? throw new ArgumentNullException(nameof(configuration));
+            _encryptionProvider = encryptionProvider ?? throw new ArgumentNullException(nameof(encryptionProvider));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -182,7 +186,9 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
         {
             _nc = _nc + 1;
 
-            var ha1 = CalculateMd5Hash(string.Format("{0}:{1}:{2}", _configuration.Username, _realm, _configuration.Password));
+            var password = _encryptionProvider.Decrypt(_configuration.Password);
+
+            var ha1 = CalculateMd5Hash(string.Format("{0}:{1}:{2}", _configuration.Username, _realm, password));
             var ha2 = CalculateMd5Hash(string.Format("{0}:{1}", "GET", dir));
             var digestResponse = CalculateMd5Hash(string.Format("{0}:{1}:{2:00000000}:{3}:{4}:{5}", ha1, _nonce, _nc, _cnonce, _qop, ha2));
 

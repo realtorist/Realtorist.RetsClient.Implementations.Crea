@@ -12,6 +12,6 @@ namespace Realtorist.RetsClient.Implementations.Crea.Abstractions
         /// Creates new DDF client
         /// </summary>
         /// <returns>DDF client</returns>
-        Task<IDdfClient> CreateAsync(RetsConfiguration configuration);
+        Task<IDdfClient> CreateAsync(ListingsFeed configuration);
     }
 }

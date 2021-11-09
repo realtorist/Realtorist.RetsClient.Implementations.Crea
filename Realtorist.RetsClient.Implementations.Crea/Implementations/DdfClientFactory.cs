@@ -27,9 +27,9 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public async Task<IDdfClient> CreateAsync(RetsConfiguration configuration)
+        public async Task<IDdfClient> CreateAsync(ListingsFeed configuration)
         {
-            var options = Options.Create<RetsConfiguration>(configuration);
+            var options = Options.Create<ListingsFeed>(configuration);
             return ActivatorUtilities.CreateInstance<DdfClient>(_serviceProvider, options);
         }
     }
