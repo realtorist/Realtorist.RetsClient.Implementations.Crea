@@ -165,6 +165,7 @@ namespace Realtorist.RetsClient.Implementations.Crea.Implementations
                     }
 
                     listing.FeedId = _ddfConfiguration.Id;
+                    listing.FeedType = CreaListingFeedExtension.CreaExtensionName;
 
                     if (!listingsSettings.ListingOfficesToAutoFavouriteListings.IsNullOrEmpty() 
                         && listingsSettings.ListingOfficesToAutoFavouriteListings.Contains(listing.ListingOfficeName))

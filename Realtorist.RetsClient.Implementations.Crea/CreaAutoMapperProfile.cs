@@ -50,6 +50,7 @@ namespace Realtorist.RetsClient.Implementations.Crea
                 .ForMember(dest => dest.Featured, dest => dest.Ignore())
                 .ForMember(dest => dest.Disabled, dest => dest.Ignore())
                 .ForMember(dest => dest.FeedId, dest => dest.Ignore())
+                .ForMember(dest => dest.FeedType, dest => dest.MapFrom(source => CreaListingFeedExtension.CreaExtensionName))
                 .ForMember(dest => dest.ExternalId, dest => dest.MapFrom(source => source.ID))
                 .ForMember(dest => dest.Building, dest => dest.MapFrom(source => source.Building))
                 .ForMember(dest => dest.MlsNumber, dest => dest.MapFrom(source => source.ListingID))
